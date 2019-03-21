@@ -100,7 +100,7 @@ class Profile extends BaseProfile
     public function getPostalAddress()
     {
         $postalAddress = $this->getProfileAttribute(self::ATTR_POSTAL_ADDRESS);
-        if (NULL === $postalAddress) {
+        if (null === $postalAddress) {
             // Get it from structured_postal_address.formatted_address
             $postalAddress = $this->getFormattedAddress();
         }
@@ -173,7 +173,7 @@ class Profile extends BaseProfile
     private function getAgeVerificationByAttribute($ageAttr)
     {
         $ageVerifications = $this->getAgeVerifications();
-        return isset($ageVerifications[$ageAttr]) ? $ageVerifications[$ageAttr] : NULL;
+        return isset($ageVerifications[$ageAttr]) ? $ageVerifications[$ageAttr] : null;
     }
 
     /**
@@ -181,14 +181,12 @@ class Profile extends BaseProfile
      */
     private function getFormattedAddress()
     {
-        $postalAddress = NULL;
+        $postalAddress = null;
         // Get it from structured_postal_address.formatted_address
         $structuredPostalAddress = $this->getStructuredPostalAddress();
-        if (NULL !== $structuredPostalAddress)
-        {
+        if (null !== $structuredPostalAddress) {
             $valueArr = $structuredPostalAddress->getValue();
-            if (
-                is_array($valueArr)
+            if (is_array($valueArr)
                 && isset($valueArr['formatted_address'])
             ) {
                 $postalAddressValue = $valueArr['formatted_address'];

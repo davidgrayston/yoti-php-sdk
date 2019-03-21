@@ -25,10 +25,9 @@ class AttributeConverter
      */
     private static function convertValueBasedOnAttributeName($value, $attrName)
     {
-       self::validateInput($value, $attrName);
+        self::validateInput($value, $attrName);
 
-        switch($attrName)
-        {
+        switch ($attrName) {
             case Profile::ATTR_DOCUMENT_DETAILS:
                 return new DocumentDetails($value);
 
@@ -53,8 +52,7 @@ class AttributeConverter
 
         self::validateInput($value, $attrName);
 
-        switch($contentType)
-        {
+        switch ($contentType) {
             case self::CONTENT_TYPE_JPEG:
             case self::CONTENT_TYPE_PNG:
                 $imageExtension = self::imageTypeToExtension($contentType);
@@ -88,8 +86,7 @@ class AttributeConverter
     {
         $type = (int)$type;
 
-        switch($type)
-        {
+        switch ($type) {
             case 2:
                 $format = 'JPEG';
                 break;
@@ -147,7 +144,7 @@ class AttributeConverter
                 $yotiAnchorsMap
             );
         } catch (\Exception $e) {
-            $yotiAttribute = NULL;
+            $yotiAttribute = null;
             error_log($e->getMessage(), 0);
         }
 
