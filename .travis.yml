@@ -1,4 +1,6 @@
 jobs:
   include:
+    - name: build
+      script: docker run --rm -v "$(PWD):/app" composer install
     - name: test
-      script: echo 'testing'
+      script: docker run -v "$(PWD)":/app php sh -c "cd /app && ./vendor/bin/phpunit"
