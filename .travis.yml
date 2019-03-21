@@ -1,4 +1,16 @@
-jobs:
-  include:
-    - name: test
-      script: docker run --rm -v `pwd`:/app composer install && docker run -v `pwd`:/app php sh -c "cd /app && ./vendor/bin/phpunit"
+language: php
+
+php:
+    - 5.6
+    - 7.2
+    - 7.3
+
+before_script:
+    - travis_retry composer self-update
+    - travis_retry composer install --no-interaction --prefer-source --dev
+
+script:
+    - vendor/bin/phpunit --coverage-clover=coverage.xml
+
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
