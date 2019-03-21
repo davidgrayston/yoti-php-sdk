@@ -1,0 +1,4 @@
+jobs:
+  include:
+    - name: test
+      script: echo 'testing'
