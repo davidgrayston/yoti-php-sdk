@@ -1,6 +1,0 @@
-ignore:
-  - "src/Attrpubapi"
-  - "src/Compubapi"
-  - "src/phpseclib"
-  - "src/protobuflib"
-  - "src/boot.php"
