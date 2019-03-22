@@ -6,12 +6,10 @@ php:
     - 7.3
 
 before_script:
+    - before_script: echo 'error_log=/dev/null' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
     - travis_retry composer self-update
     - travis_retry composer update --no-interaction --prefer-source --dev
 
 script:
-    - vendor/bin/phpunit --coverage-clover=coverage.xml
+    - vendor/bin/phpunit
     - vendor/bin/phpcs --standard=psr2 ./src/Yoti
-
-after_success:
-    - bash <(curl -s https://codecov.io/bash)
