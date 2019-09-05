@@ -9,6 +9,10 @@ $profileAttributes = [];
 
 try {
     $yotiClient = new Yoti\YotiClient(getenv('YOTI_SDK_ID'), getenv('YOTI_KEY_FILE_PATH'));
+
+    $requestHandler = new \Yoti\Demo\Http\Guzzle\RequestHandler();
+    $yotiClient->setRequestHandler($requestHandler);
+
     $activityDetails = $yotiClient->getActivityDetails($token);
     $profile = $activityDetails->getProfile();
 

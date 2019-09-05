@@ -2,7 +2,8 @@
   "description": "testing yoti-php-sdk",
   "require": {
     "yoti/yoti-php-sdk": "^2.2.0",
-    "symfony/dotenv": "3.3.0"
+    "symfony/dotenv": "3.3.0",
+    "guzzlehttp/guzzle": "^6.3"
   },
   "repositories": [
     {
@@ -13,6 +14,11 @@
       }
     }
   ],
+  "autoload": {
+    "psr-4": {
+        "Yoti\\Demo\\": "src"
+    }
+  },
   "scripts": {
     "pre-install-cmd": "@copy-sdk",
     "pre-update-cmd": "@copy-sdk",
