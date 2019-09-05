@@ -27,15 +27,13 @@ class RequestHandler implements RequestHandlerInterface
             $body = $request->getPayload()->getPayloadJSON();
         }
 
-        $request = new GuzzleHttpRequest(
+        $client = new Client();
+        $response = $client->send(new GuzzleHttpRequest(
             $request->getMethod(),
             $request->getUrl(),
             $request->getHeaders(),
             $body
-        );
-
-        $client = new Client();
-        $response = $client->send($request);
+        ));
 
         return new Response(
             $response->getBody(),
