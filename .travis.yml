@@ -15,3 +15,6 @@ install:
 script:
     - composer test
     - composer lint
+
+after_success:
+  - travis_retry composer coveralls
