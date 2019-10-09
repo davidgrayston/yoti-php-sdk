@@ -5,16 +5,8 @@ git:
 
 jobs:
   include:
+    - &test
     - stage: Test
-      php: "7.3"
-      install:
-        - travis_retry composer self-update
-        - travis_retry composer install --no-interaction --prefer-source --dev
-      script:
-        - composer test
-        - composer lint
-    - &test-compatibility
-      stage: Compatibility
       php: "7.3"
       os: linux
       install:
@@ -22,17 +14,16 @@ jobs:
         - travis_retry composer install --no-interaction --prefer-source --dev
       script:
         - composer test
-    - <<: *test-compatibility
+        - composer lint
+    - <<: *test
+      stage: Compatibility
       php: "5.6"
-    - <<: *test-compatibility
+    - <<: *test
       php: "7.2"
-    - <<: *test-compatibility
+    - <<: *test
       php: "7.1"
-    - stage: Coverage
+    - <<: *test
+      stage: Coverage
       name: Coveralls
-      php: "7.3"
-      install:
-        - travis_retry composer self-update
-        - travis_retry composer install --no-interaction --prefer-source --dev
       script:
         - composer coveralls
