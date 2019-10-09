@@ -15,12 +15,13 @@ jobs:
       script:
         - composer test
         - composer lint
-    - <<: *test
+    - &compatibility
+      <<: *test
       stage: Compatibility
       php: "5.6"
-    - <<: *test
+    - <<: *compatibility
       php: "7.2"
-    - <<: *test
+    - <<: *compatibility
       php: "7.1"
     - <<: *test
       stage: Coverage
