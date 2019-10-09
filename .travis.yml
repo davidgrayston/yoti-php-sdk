@@ -7,7 +7,7 @@ jobs:
   include:
     - stage: Test
       php: "7.3"
-      install: &install
+      install:
         - travis_retry composer self-update
         - travis_retry composer install --no-interaction --prefer-source --dev
       script:
@@ -17,7 +17,9 @@ jobs:
       stage: Compatibility
       php: "7.3"
       os: linux
-      <<: *install
+      install:
+        - travis_retry composer self-update
+        - travis_retry composer install --no-interaction --prefer-source --dev
       script:
         - composer test
     - <<: *test-compatibility
@@ -29,6 +31,8 @@ jobs:
     - stage: Coverage
       name: Coveralls
       php: "7.3"
-      <<: *install
+      install:
+        - travis_retry composer self-update
+        - travis_retry composer install --no-interaction --prefer-source --dev
       script:
         - composer coveralls
