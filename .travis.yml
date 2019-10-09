@@ -26,5 +26,6 @@ jobs:
     - <<: *test
       stage: Coverage
       name: Coveralls
+      if: type = pull_request
       script:
         - composer coveralls
