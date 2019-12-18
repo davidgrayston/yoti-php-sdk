@@ -98,11 +98,15 @@ When your application receives a token via the exposed endpoint (it will be assi
 
 ```php
 <?php
+use \Yoti\YotiClient;
+use \Yoti\Util\PemFile;
+
 // The token can be used only once
 // Reusing the same token will result to a 404 error
 $oneTimeUseToken = $_GET['token'];
 try {
-    $client = new \Yoti\YotiClient('SDK_ID', 'path/to/your-application-pem-file.pem');
+    $pemFile = PemFile::fromFilePath('path/to/your-application-pem-file.pem');
+    $client = new YotiClient('SDK_ID', $pemFile);
     $activityDetails = $client->getActivityDetails($oneTimeUseToken);
 } catch(Exception $e) {
     // Handle unhappy path

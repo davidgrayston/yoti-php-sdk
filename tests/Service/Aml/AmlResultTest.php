@@ -1,24 +1,24 @@
 <?php
 
-namespace YotiTest\Http;
+namespace YotiTest\Service\Aml;
 
-use Yoti\Http\AmlResult;
+use Yoti\Service\Aml\AmlResult;
+use Yoti\Util\Json;
 use YotiTest\TestCase;
 
 /**
- * @coversDefaultClass \Yoti\Http\AmlResult
+ * @coversDefaultClass \Yoti\Service\Aml\AmlResult
  */
 class AmlResultTest extends TestCase
 {
     /**
-     * @var \Yoti\Http\AmlResult
+     * @var \Yoti\Service\Aml\AmlResult
      */
     public $amlResult;
 
     public function setup()
     {
-        $resultArr = json_decode(file_get_contents(AML_CHECK_RESULT_JSON), true);
-        $this->amlResult = new AmlResult($resultArr);
+        $this->amlResult = new AmlResult(Json::decode(file_get_contents(AML_CHECK_RESULT_JSON)));
     }
 
     /**

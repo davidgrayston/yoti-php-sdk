@@ -5,9 +5,9 @@ namespace Yoti\Http;
 use GuzzleHttp\Psr7\Request as RequestMessage;
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Client\ClientInterface;
+use Yoti\Util\Config;
 use Yoti\Util\Constants;
 use Yoti\Util\PemFile;
-use Yoti\Util\Validation;
 
 class RequestBuilder
 {
@@ -18,10 +18,7 @@ class RequestBuilder
     const YOTI_SDK_IDENTIFIER_KEY = 'X-Yoti-SDK';
 
     /** SDK Version HTTP header key. */
-    const YOTI_SDK_VERSION = 'X-Yoti-SDK-Version';
-
-    /** Default SDK Identifier. */
-    const YOTI_SDK_IDENTIFIER = 'PHP';
+    const YOTI_SDK_VERSION_KEY = 'X-Yoti-SDK-Version';
 
     /**
      * @var string
@@ -32,16 +29,6 @@ class RequestBuilder
      * @var \Yoti\Util\PemFile
      */
     private $pemFile;
-
-    /**
-     * @var string
-     */
-    private $sdkIdentifier = self::YOTI_SDK_IDENTIFIER;
-
-    /**
-     * @var string
-     */
-    private $sdkVersion = null;
 
     /**
      * @var array
@@ -102,7 +89,7 @@ class RequestBuilder
      *
      * @return RequestBuilder
      */
-    private function withPemFile(PemFile $pemFile)
+    public function withPemFile(PemFile $pemFile)
     {
         $this->pemFile = $pemFile;
         return $this;
@@ -178,30 +165,6 @@ class RequestBuilder
     }
 
     /**
-     * @param string $sdkIdentifier
-     *
-     * @return \Yoti\Http\RequestBuilder
-     */
-    public function withSdkIdentifier($sdkIdentifier)
-    {
-        Validation::isString($sdkIdentifier, 'SDK identifier');
-        $this->sdkIdentifier = $sdkIdentifier;
-        return $this;
-    }
-
-    /**
-     * @param string $sdkVersion
-     *
-     * @return \Yoti\Http\RequestBuilder
-     */
-    public function withSdkVersion($sdkVersion)
-    {
-        Validation::isString($sdkVersion, 'SDK version');
-        $this->sdkVersion = $sdkVersion;
-        return $this;
-    }
-
-    /**
      * @param string $name
      * @param string $value
      *
@@ -232,22 +195,18 @@ class RequestBuilder
      */
     private function getHeaders()
     {
+        $sdkIdentifier = Config::get(Constants::SDK_IDENTIFIER_KEY, Constants::SDK_IDENTIFIER);
+        $sdkVersion = Config::get(Constants::SDK_VERSION_KEY, Constants::SDK_VERSION);
+
         // Prepare request Http Headers
         $defaultHeaders = [
-            self::YOTI_SDK_IDENTIFIER_KEY => $this->sdkIdentifier,
+            self::YOTI_SDK_IDENTIFIER_KEY => $sdkIdentifier,
+            self::YOTI_SDK_VERSION_KEY => "{$sdkIdentifier}-{$sdkVersion}",
             'Accept' => 'application/json',
         ];
 
         if (isset($this->payload)) {
             $defaultHeaders['Content-Type'] = 'application/json';
-        }
-
-        if (is_null($this->sdkVersion)) {
-            $this->sdkVersion = Constants::SDK_VERSION;
-        }
-
-        if (isset($this->sdkVersion)) {
-            $defaultHeaders[self::YOTI_SDK_VERSION] =  "{$this->sdkIdentifier}-{$this->sdkVersion}";
         }
 
         return array_merge($defaultHeaders, $this->headers);

@@ -1,8 +1,7 @@
 <?php
 
-namespace YotiTest;
+namespace YotiTest\Service\Profile;
 
-use Yoti\ActivityDetails;
 use Yoti\Entity\Attribute;
 use Yoti\Entity\Profile;
 use Yoti\Entity\Receipt;
@@ -10,9 +9,11 @@ use Yoti\Entity\Image;
 use Yoti\Entity\ApplicationProfile;
 use Yoti\Entity\AttributeIssuanceDetails;
 use Yoti\Entity\ExtraData;
+use Yoti\Service\Profile\ActivityDetails;
+use YotiTest\TestCase;
 
 /**
- * @coversDefaultClass \Yoti\ActivityDetails
+ * @coversDefaultClass \Yoti\Service\Profile\ActivityDetails
  */
 class ActivityDetailsTest extends TestCase
 {

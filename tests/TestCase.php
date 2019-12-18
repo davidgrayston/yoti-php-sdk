@@ -2,6 +2,8 @@
 
 namespace YotiTest;
 
+use Yoti\Util\Config;
+
 class TestCase extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -12,6 +14,9 @@ class TestCase extends \PHPUnit_Framework_TestCase
         parent::teardown();
         ini_restore('error_log');
         ini_restore('display_errors');
+
+        // Reset Yoti configuration.
+        Config::reset();
     }
 
     /**

@@ -16,14 +16,14 @@ class PemFile
     /**
      * @param string $content
      */
-    public function __construct($content)
+    public function __construct(string $content)
     {
         if (empty($content)) {
-            throw new PemFileException('PEM content is required', 400);
+            throw new PemFileException('PEM content is required');
         }
 
         if (!openssl_get_privatekey($content)) {
-            throw new PemFileException('PEM content is invalid', 400);
+            throw new PemFileException('PEM content is invalid');
         }
 
         $this->content = $content;
@@ -34,9 +34,9 @@ class PemFile
      *
      * @param string $content
      *
-     * @return PemFile
+     * @return \Yoti\Util\PemFile
      */
-    public static function fromString($content)
+    public static function fromString($content): PemFile
     {
         return new static($content);
     }
@@ -46,9 +46,9 @@ class PemFile
      *
      * @param string $filePath
      *
-     * @return PemFile
+     * @return \Yoti\Util\PemFile
      */
-    public static function fromFilePath($filePath)
+    public static function fromFilePath($filePath): PemFile
     {
         if (!is_file($filePath)) {
             throw new PemFileException('PEM file was not found.');
@@ -62,9 +62,9 @@ class PemFile
      *
      * @return string|null
      *
-     * @throws PemFileException
+     * @throws \Yoti\Exception\PemFileException
      */
-    public function getAuthKey()
+    public function getAuthKey(): string
     {
         $details = openssl_pkey_get_details(openssl_pkey_get_private($this->content));
         if (!array_key_exists('key', $details)) {
@@ -92,7 +92,7 @@ class PemFile
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->content;
     }

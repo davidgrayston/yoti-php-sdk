@@ -7,6 +7,8 @@ use YotiTest\TestCase;
 use Yoti\Http\Request;
 use Yoti\Http\RequestBuilder;
 use Yoti\Http\Payload;
+use Yoti\Util\Config;
+use Yoti\Util\Constants;
 
 /**
  * @coversDefaultClass \Yoti\Http\RequestBuilder
@@ -29,8 +31,6 @@ class RequestBuilderTest extends TestCase
      * @covers ::withPemFilePath
      * @covers ::withMethod
      * @covers ::withEndpoint
-     * @covers ::withSdkIdentifier
-     * @covers ::withSdkVersion
      * @covers ::getHeaders
      * @covers ::validateMethod
      * @covers ::validateHeaders
@@ -46,8 +46,6 @@ class RequestBuilderTest extends TestCase
           ->withPemFilePath(PEM_FILE)
           ->withMethod('POST')
           ->withEndpoint('/some-endpoint')
-          ->withSdkIdentifier('PHP')
-          ->withSdkVersion('1.2.3')
           ->withPayload($expectedPayload)
           ->build();
 
@@ -60,7 +58,7 @@ class RequestBuilderTest extends TestCase
         $this->assertRegExp($expectedEndpointPattern, $message->getUri());
         $this->assertEquals('POST', $message->getMethod());
         $this->assertEquals('PHP', $message->getHeader('X-Yoti-SDK')[0]);
-        $this->assertEquals('PHP-1.2.3', $message->getHeader('X-Yoti-SDK-Version')[0]);
+        $this->assertRegExp('~PHP-\d+\.\d+\.\d+~', $message->getHeader('X-Yoti-SDK-Version')[0]);
         $this->assertNotEmpty($message->getHeader('X-Yoti-Auth-Digest')[0]);
         $this->assertEquals('application/json', $message->getHeader('Content-Type')[0]);
         $this->assertEquals('application/json', $message->getHeader('Accept')[0]);
@@ -69,17 +67,17 @@ class RequestBuilderTest extends TestCase
 
     /**
      * @covers ::build
-     * @covers ::withSdkIdentifier
-     * @covers ::withSdkVersion
+     * @covers ::getHeaders
      */
-    public function testWithSdkIdentifier()
+    public function testCustomSdkIdentifier()
     {
+        Config::set(Constants::SDK_IDENTIFIER_KEY, 'Drupal');
+        Config::set(Constants::SDK_VERSION_KEY, '4.5.6');
+
         $request = (new RequestBuilder())
           ->withBaseUrl(self::SOME_BASE_URL)
           ->withPemFilePath(PEM_FILE)
           ->withGet()
-          ->withSdkIdentifier('Drupal')
-          ->withSdkVersion('4.5.6')
           ->build();
 
         $message = $request->getMessage();
@@ -135,38 +133,6 @@ class RequestBuilderTest extends TestCase
         $message = $request->getMessage();
         $this->assertEquals('GET', $message->getMethod());
         $this->assertArrayNotHasKey('Content-Type', $message->getHeaders());
-    }
-
-    /**
-     * @covers ::build
-     * @covers ::withSdkIdentifier
-     *
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage SDK identifier must be a string
-     */
-    public function testBuildWithInvalidSdkIdentifier()
-    {
-        (new RequestBuilder())
-          ->withBaseUrl(self::SOME_BASE_URL)
-          ->withPemFilePath(PEM_FILE)
-          ->withSdkIdentifier(['Invalid'])
-          ->build();
-    }
-
-    /**
-     * @covers ::build
-     * @covers ::withSdkVersion
-     *
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage SDK version must be a string
-     */
-    public function testBuildWithInvalidSdkVersion()
-    {
-        (new RequestBuilder())
-          ->withBaseUrl(self::SOME_BASE_URL)
-          ->withPemFilePath(PEM_FILE)
-          ->withSdkVersion(['Invalid SDK Version'])
-          ->build();
     }
 
     /**

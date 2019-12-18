@@ -6,6 +6,7 @@ use Psr\Http\Client\ClientInterface;
 use Yoti\Http\Payload;
 use Yoti\YotiClient;
 use Yoti\Http\RequestBuilder;
+use Yoti\Util\PemFile;
 use YotiSandbox\Http\SandboxPathManager;
 use YotiSandbox\Http\TokenRequest;
 use YotiSandbox\Http\TokenResponse;
@@ -20,14 +21,9 @@ class SandboxClient
     private $sdkId;
 
     /**
-     * @var string
+     * @var \Yoti\Util\PemFile
      */
-    private $sdkIdentifier;
-
-    /**
-     * @var string
-     */
-    private $pem;
+    private $pemFile;
 
     /**
      * @var \YotiSandbox\Http\SandboxPathManager
@@ -60,20 +56,16 @@ class SandboxClient
         $sdkId,
         $pem,
         SandboxPathManager $sandboxPathManager,
-        $sdkIdentifier = 'PHP',
         ClientInterface $httpClient = null
     ) {
         $this->sdkId = $sdkId;
-        $this->sdkIdentifier = $sdkIdentifier;
-        $this->pem = $this->includePemWrapper($pem);
+        $this->pemFile = PemFile::fromString($this->includePemWrapper($pem));
         $this->sandboxPathManager = $sandboxPathManager;
         $this->httpClient = $httpClient;
 
-        $this->yotiClient = new YotiClient($sdkId, $this->pem, $sandboxPathManager->getProfileApiPath());
+        $this->yotiClient = new YotiClient($sdkId, $this->pemFile, $httpClient);
 
-        if (isset($this->httpClient)) {
-            $this->yotiClient->setHttpClient($httpClient);
-        }
+        $this->yotiClient->setConnectApiUrl($sandboxPathManager->getProfileApiPath());
     }
 
     /**
@@ -81,7 +73,7 @@ class SandboxClient
      *
      * @param string $token
      *
-     * @return \Yoti\ActivityDetails
+     * @return \Yoti\Service\Profile\ActivityDetails
      *
      * @throws \Yoti\Exception\ActivityDetailsException
      * @throws \Yoti\Exception\ReceiptException
@@ -124,8 +116,7 @@ class SandboxClient
             ->withBaseUrl($this->sandboxPathManager->getTokenApiPath())
             ->withEndpoint($endpoint)
             ->withMethod($httpMethod)
-            ->withSdkIdentifier($this->sdkIdentifier)
-            ->withPemString($this->pem)
+            ->withPemFile($this->pemFile)
             ->withPayload($payload)
             ->withQueryParam('appId', $this->sdkId);
 

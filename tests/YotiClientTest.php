@@ -8,10 +8,13 @@ use Yoti\YotiClient;
 use Yoti\Entity\Country;
 use Yoti\Entity\AmlAddress;
 use Yoti\Entity\AmlProfile;
-use Yoti\Http\AmlResult;
+use Yoti\Service\Aml\AmlResult;
+use Yoti\Service\Profile\ActivityDetails;
 use Yoti\ShareUrl\DynamicScenario;
 use Yoti\ShareUrl\DynamicScenarioBuilder;
 use Yoti\ShareUrl\Policy\DynamicPolicyBuilder;
+use Yoti\Util\Constants;
+use Yoti\Util\PemFile;
 
 use function GuzzleHttp\Psr7\stream_for;
 
@@ -26,9 +29,9 @@ class YotiClientTest extends TestCase
     public $yotiClient;
 
     /**
-     * @var string Pem file contents
+     * @var \Yoti\Util\PemFile
      */
-    public $pem;
+    public $pemFile;
 
     /**
      * @var \Yoti\Entity\AmlProfile
@@ -42,99 +45,36 @@ class YotiClientTest extends TestCase
 
     public function setUp()
     {
-        $this->pem = file_get_contents(PEM_FILE);
+        $this->pemFile = PemFile::fromFilePath(PEM_FILE);
     }
 
     /**
      * Test empty SDK ID
      *
      * @covers ::__construct
-     * @covers ::setSdkId
      *
-     * @expectedException \Yoti\Exception\YotiClientException
-     * @expectedExceptionMessage SDK ID is required
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage SDK ID cannot be empty
      */
     public function testEmptySdkId()
     {
-        new YotiClient('', PEM_FILE);
+        new YotiClient('', $this->pemFile);
     }
 
     /**
      * Test the use of pem file path
      *
      * @covers ::__construct
-     * @covers ::extractPemContent
      * @covers ::checkRequiredModules
      */
     public function testCanUsePemFile()
     {
-        $yotiClientObj = new YotiClient(SDK_ID, PEM_FILE);
+        $yotiClientObj = new YotiClient(SDK_ID, $this->createMock(Pemfile::class));
         $this->assertInstanceOf(\Yoti\YotiClient::class, $yotiClientObj);
-    }
-
-    /**
-     * Test the use of pem file path with file:// stream wrapper
-     *
-     * @covers ::__construct
-     * @covers ::extractPemContent
-     */
-    public function testCanUsePemFileStreamWrapper()
-    {
-        $yotiClientObj = new YotiClient(SDK_ID, 'file://' . PEM_FILE);
-        $this->assertInstanceOf(\Yoti\YotiClient::class, $yotiClientObj);
-    }
-
-    /**
-     * Test passing invalid pem file path with file:// stream wrapper
-     *
-     * @covers ::__construct
-     * @covers ::extractPemContent
-     *
-     * @expectedException \Yoti\Exception\YotiClientException
-     * @expectedExceptionMessage PEM file was not found
-     */
-    public function testInvalidPemFileStreamWrapperPath()
-    {
-        new YotiClient(SDK_ID, 'file://invalid_file_path.pem');
-    }
-
-    /**
-     * Test passing pem file with invalid contents
-     *
-     * @covers ::__construct
-     * @covers ::extractPemContent
-     *
-     * @expectedException \Yoti\Exception\YotiClientException
-     * @expectedExceptionMessage PEM file path or content is invalid
-     */
-    public function testInvalidPemFileContents()
-    {
-        new YotiClient(SDK_ID, INVALID_PEM_FILE);
-    }
-
-    /**
-     * Test passing invalid pem string
-     *
-     * @covers ::__construct
-     * @covers ::extractPemContent
-     *
-     * @expectedException \Yoti\Exception\YotiClientException
-     * @expectedExceptionMessage PEM file path or content is invalid
-     */
-    public function testInvalidPemString()
-    {
-        new YotiClient(SDK_ID, 'invalid_pem_string');
     }
 
     /**
      * @covers ::getActivityDetails
-     * @covers ::decryptConnectToken
-     * @covers ::setHttpClient
-     * @covers ::sendConnectRequest
-     * @covers ::getReceipt
-     * @covers ::processJsonResponse
-     * @covers ::checkForReceipt
-     * @covers ::setSdkId
      */
     public function testGetActivityDetails()
     {
@@ -160,20 +100,17 @@ class YotiClientTest extends TestCase
             }))
             ->willReturn($response);
 
-        $yotiClient = new YotiClient(SDK_ID, $this->pem);
-        $yotiClient->setHttpClient($httpClient);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile, $httpClient);
 
         $this->assertInstanceOf(
-            \Yoti\ActivityDetails::class,
+            ActivityDetails::class,
             $yotiClient->getActivityDetails(YOTI_CONNECT_TOKEN)
         );
     }
 
-
     /**
      * @covers ::setSdkIdentifier
      * @covers ::setSdkVersion
-     * @covers ::sendConnectRequest
      */
     public function testSetSdkHeaders()
     {
@@ -200,8 +137,8 @@ class YotiClientTest extends TestCase
             }))
             ->willReturn($response);
 
-        $yotiClient = new YotiClient(SDK_ID, $this->pem);
-        $yotiClient->setHttpClient($httpClient);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile, $httpClient);
+
         $yotiClient->setSdkIdentifier($expectedSdkIdentifier);
         $yotiClient->setSdkVersion($expectedSdkVersion);
 
@@ -210,7 +147,6 @@ class YotiClientTest extends TestCase
 
     /**
      * @covers ::getActivityDetails
-     * @covers ::isResponseSuccess
      *
      * @dataProvider httpErrorStatusCodeProvider
      *
@@ -225,10 +161,6 @@ class YotiClientTest extends TestCase
 
     /**
      * @covers ::performAmlCheck
-     * @covers ::setHttpClient
-     * @covers ::sendConnectRequest
-     * @covers ::processJsonResponse
-     * @covers ::validateAmlResult
      * @covers \Yoti\Entity\AmlAddress::__construct
      * @covers \Yoti\Entity\AmlProfile::__construct
      * @covers \Yoti\Entity\Country::__construct
@@ -262,8 +194,7 @@ class YotiClientTest extends TestCase
             )
             ->willReturn($response);
 
-        $yotiClient = new YotiClient(SDK_ID, $this->pem);
-        $yotiClient->setHttpClient($httpClient);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile, $httpClient);
 
         $result = $yotiClient->performAmlCheck($amlProfile);
 
@@ -272,9 +203,6 @@ class YotiClientTest extends TestCase
 
     /**
      * @covers ::performAmlCheck
-     * @covers ::validateAmlResult
-     * @covers ::getErrorMessage
-     * @covers ::isResponseSuccess
      *
      * @dataProvider httpErrorStatusCodeProvider
      *
@@ -294,31 +222,10 @@ class YotiClientTest extends TestCase
      */
     public function testInvalidConnectToken()
     {
-        $yotiClient = new YotiClient(SDK_ID, $this->pem);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile);
 
         $this->expectException('Exception');
         $yotiClient->getActivityDetails(INVALID_YOTI_CONNECT_TOKEN);
-    }
-
-    /**
-     * Test invalid http header value for X-Yoti-SDK
-     *
-     * @covers ::setSdkIdentifier
-     *
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage SDK identifier must be a string
-     */
-    public function testInvalidSdkIdentifier()
-    {
-        $yotiClient = new YotiClient(
-            SDK_ID,
-            $this->pem,
-            YotiClient::DEFAULT_CONNECT_API
-        );
-        $yotiClient->setSdkIdentifier(['Invalid']);
-
-        $amlProfile = $this->createMock(AmlProfile::class);
-        $yotiClient->performAmlCheck($amlProfile);
     }
 
     /**
@@ -326,15 +233,14 @@ class YotiClientTest extends TestCase
      *
      * @covers ::setSdkVersion
      *
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage SDK version must be a string
+     * @expectedException \TypeError
+     * @expectedExceptionMessage Argument 1 passed to Yoti\YotiClient::setSdkVersion() must be of the type string
      */
     public function testInvalidSdkVersion()
     {
         $yotiClient = new YotiClient(
             SDK_ID,
-            $this->pem,
-            YotiClient::DEFAULT_CONNECT_API
+            $this->pemFile
         );
         $yotiClient->setSdkVersion(['WrongVersion']);
 
@@ -354,11 +260,9 @@ class YotiClientTest extends TestCase
     {
         $yotiClient = new YotiClient(
             SDK_ID,
-            $this->pem,
-            YotiClient::DEFAULT_CONNECT_API,
-            $identifier
+            $this->pemFile
         );
-        $yotiClient->setSdkIdentifier($identifier);
+        $yotiClient->setSdkIdentifier('some data provider');
         $this->assertInstanceOf(YotiClient::class, $yotiClient);
     }
 
@@ -379,12 +283,10 @@ class YotiClientTest extends TestCase
 
     /**
      * @covers ::createShareUrl
-     * @covers ::sendConnectRequest
-     * @covers ::processJsonResponse
      */
     public function testCreateShareUrl()
     {
-        $expectedUrl = YotiClient::DEFAULT_CONNECT_API . sprintf('/qrcodes/apps/%s', SDK_ID) . '?appId=' . SDK_ID;
+        $expectedUrl = Constants::CONNECT_API_URL . sprintf('/qrcodes/apps/%s', SDK_ID) . '?appId=' . SDK_ID;
         $expectedUrlPattern = sprintf('~%s.*?nonce=.*?&timestamp=.*?~', preg_quote($expectedUrl));
         $expectedQrCode = 'https://dynamic-code.yoti.com/CAEaJDRjNTQ3M2IxLTNiNzktNDg3My1iMmM4LThiMTQxZDYwMjM5ODAC';
         $expectedRefId = '4c5473b1-3b79-4873-b2c8-8b141d602398';
@@ -414,8 +316,7 @@ class YotiClientTest extends TestCase
             }))
             ->willReturn($response);
 
-        $yotiClient = new YotiClient(SDK_ID, $this->pem);
-        $yotiClient->setHttpClient($httpClient);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile, $httpClient);
 
         $shareUrlResult = $yotiClient->createShareUrl($dynamicScenario);
 
@@ -425,7 +326,6 @@ class YotiClientTest extends TestCase
 
     /**
      * @covers ::createShareUrl
-     * @covers ::isResponseSuccess
      *
      * @dataProvider httpErrorStatusCodeProvider
      *
@@ -470,8 +370,7 @@ class YotiClientTest extends TestCase
             ->method('sendRequest')
             ->willReturn($response);
 
-        $yotiClient = new YotiClient(SDK_ID, $this->pem);
-        $yotiClient->setHttpClient($httpClient);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile, $httpClient);
 
         return $yotiClient;
     }

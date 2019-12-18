@@ -6,7 +6,7 @@ use Yoti\Protobuf\Compubapi\EncryptedData;
 use YotiTest\TestCase;
 use Yoti\Entity\Image;
 use Yoti\Entity\Receipt;
-use Yoti\ActivityDetails;
+use Yoti\Service\Profile\ActivityDetails;
 use Yoti\Util\Profile\AttributeConverter;
 use Yoti\Entity\MultiValue;
 use Yoti\Entity\Attribute;
