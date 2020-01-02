@@ -7,8 +7,6 @@ use YotiTest\TestCase;
 use Yoti\Http\Request;
 use Yoti\Http\RequestBuilder;
 use Yoti\Http\Payload;
-use Yoti\Util\Config;
-use Yoti\Util\Constants;
 
 /**
  * @coversDefaultClass \Yoti\Http\RequestBuilder
@@ -71,12 +69,11 @@ class RequestBuilderTest extends TestCase
      */
     public function testCustomSdkIdentifier()
     {
-        Config::set(Constants::SDK_IDENTIFIER_KEY, 'Drupal');
-        Config::set(Constants::SDK_VERSION_KEY, '4.5.6');
-
         $request = (new RequestBuilder())
           ->withBaseUrl(self::SOME_BASE_URL)
           ->withPemFilePath(PEM_FILE)
+          ->withSdkIdentifier('Drupal')
+          ->withSdkVersion('4.5.6')
           ->withGet()
           ->build();
 

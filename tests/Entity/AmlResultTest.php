@@ -2,17 +2,17 @@
 
 namespace YotiTest\Service\Aml;
 
-use Yoti\Service\Aml\AmlResult;
+use Yoti\Entity\AmlResult;
 use Yoti\Util\Json;
 use YotiTest\TestCase;
 
 /**
- * @coversDefaultClass \Yoti\Service\Aml\AmlResult
+ * @coversDefaultClass \Yoti\Entity\AmlResult
  */
 class AmlResultTest extends TestCase
 {
     /**
-     * @var \Yoti\Service\Aml\AmlResult
+     * @var \Yoti\Entity\AmlResult
      */
     public $amlResult;
 

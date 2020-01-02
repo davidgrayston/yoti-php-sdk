@@ -2,11 +2,11 @@
 
 namespace YotiTest\Service\ShareUrl;
 
-use Yoti\Service\ShareUrl\ShareUrlResult;
+use Yoti\ShareUrl\ShareUrlResult;
 use YotiTest\TestCase;
 
 /**
- * @coversDefaultClass \Yoti\Service\ShareUrl\ShareUrlResult
+ * @coversDefaultClass \Yoti\ShareUrl\ShareUrlResult
  */
 class ShareUrlResultTest extends TestCase
 {

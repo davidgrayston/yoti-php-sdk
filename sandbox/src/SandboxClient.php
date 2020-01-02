@@ -63,9 +63,13 @@ class SandboxClient
         $this->sandboxPathManager = $sandboxPathManager;
         $this->httpClient = $httpClient;
 
-        $this->yotiClient = new YotiClient($sdkId, $this->pemFile, $httpClient);
+        $this->yotiClient = new YotiClient($sdkId, $this->pemFile);
 
         $this->yotiClient->setConnectApiUrl($sandboxPathManager->getProfileApiPath());
+
+        if ($httpClient) {
+            $this->yotiClient->setHttpClient($httpClient);
+        }
     }
 
     /**
@@ -73,7 +77,7 @@ class SandboxClient
      *
      * @param string $token
      *
-     * @return \Yoti\Service\Profile\ActivityDetails
+     * @return \Yoti\ActivityDetails
      *
      * @throws \Yoti\Exception\ActivityDetailsException
      * @throws \Yoti\Exception\ReceiptException

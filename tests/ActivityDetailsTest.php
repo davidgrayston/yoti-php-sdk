@@ -9,11 +9,11 @@ use Yoti\Entity\Image;
 use Yoti\Entity\ApplicationProfile;
 use Yoti\Entity\AttributeIssuanceDetails;
 use Yoti\Entity\ExtraData;
-use Yoti\Service\Profile\ActivityDetails;
+use Yoti\ActivityDetails;
 use YotiTest\TestCase;
 
 /**
- * @coversDefaultClass \Yoti\Service\Profile\ActivityDetails
+ * @coversDefaultClass \Yoti\ActivityDetails
  */
 class ActivityDetailsTest extends TestCase
 {

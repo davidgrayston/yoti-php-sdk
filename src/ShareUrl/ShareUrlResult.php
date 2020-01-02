@@ -1,6 +1,6 @@
 <?php
 
-namespace Yoti\Service\ShareUrl;
+namespace Yoti\ShareUrl;
 
 use Yoti\Exception\ShareUrlException;
 use Yoti\Util\Validation;

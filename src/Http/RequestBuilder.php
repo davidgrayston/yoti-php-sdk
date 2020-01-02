@@ -3,11 +3,11 @@
 namespace Yoti\Http;
 
 use GuzzleHttp\Psr7\Request as RequestMessage;
-use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Client\ClientInterface;
-use Yoti\Util\Config;
 use Yoti\Util\Constants;
 use Yoti\Util\PemFile;
+
+use function GuzzleHttp\Psr7\uri_for;
 
 class RequestBuilder
 {
@@ -60,13 +60,17 @@ class RequestBuilder
      */
     private $client;
 
+    private $sdkVersion = Constants::SDK_VERSION;
+
+    private $sdkIdentifier = Constants::SDK_IDENTIFIER;
+
     /**
      * @param string $baseUrl
      *   Base URL with no trailing slashes.
      *
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withBaseUrl($baseUrl)
+    public function withBaseUrl($baseUrl): RequestBuilder
     {
         $this->baseUrl = rtrim($baseUrl, '/');
         return $this;
@@ -78,7 +82,7 @@ class RequestBuilder
      *
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withEndpoint($endpoint)
+    public function withEndpoint($endpoint): RequestBuilder
     {
         $this->endpoint = '/' . ltrim($endpoint, '/');
         return $this;
@@ -89,7 +93,7 @@ class RequestBuilder
      *
      * @return RequestBuilder
      */
-    public function withPemFile(PemFile $pemFile)
+    public function withPemFile(PemFile $pemFile): RequestBuilder
     {
         $this->pemFile = $pemFile;
         return $this;
@@ -100,7 +104,7 @@ class RequestBuilder
      *
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withPemFilePath($filePath)
+    public function withPemFilePath($filePath): RequestBuilder
     {
         return $this->withPemFile(PemFile::fromFilePath($filePath));
     }
@@ -110,7 +114,7 @@ class RequestBuilder
      *
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withPemString($content)
+    public function withPemString($content): RequestBuilder
     {
         return $this->withPemFile(PemFile::fromString($content));
     }
@@ -120,7 +124,7 @@ class RequestBuilder
      *
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withMethod($method)
+    public function withMethod($method): RequestBuilder
     {
         $this->method = $method;
         return $this;
@@ -129,7 +133,7 @@ class RequestBuilder
     /**
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withGet()
+    public function withGet(): RequestBuilder
     {
         return $this->withMethod(Request::METHOD_GET);
     }
@@ -137,7 +141,7 @@ class RequestBuilder
     /**
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withPost()
+    public function withPost(): RequestBuilder
     {
         return $this->withMethod(Request::METHOD_POST);
     }
@@ -147,7 +151,7 @@ class RequestBuilder
      *
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withPayload(Payload $payload)
+    public function withPayload(Payload $payload): RequestBuilder
     {
         $this->payload = $payload;
         return $this;
@@ -158,7 +162,7 @@ class RequestBuilder
      *
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withClient(ClientInterface $client)
+    public function withClient(ClientInterface $client): RequestBuilder
     {
         $this->client = $client;
         return $this;
@@ -170,7 +174,7 @@ class RequestBuilder
      *
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withHeader($name, $value)
+    public function withHeader($name, $value): RequestBuilder
     {
         $this->headers[$name] = $value;
         return $this;
@@ -182,9 +186,21 @@ class RequestBuilder
      *
      * @return \Yoti\Http\RequestBuilder
      */
-    public function withQueryParam($name, $value)
+    public function withQueryParam($name, $value): RequestBuilder
     {
         $this->queryParams[$name] = $value;
+        return $this;
+    }
+
+    public function withSdkIdentifier(string $sdkIdentifier): RequestBuilder
+    {
+        $this->sdkIdentifier = $sdkIdentifier;
+        return $this;
+    }
+
+    public function withSdkVersion(string $sdkVersion): RequestBuilder
+    {
+        $this->sdkVersion = $sdkVersion;
         return $this;
     }
 
@@ -195,13 +211,10 @@ class RequestBuilder
      */
     private function getHeaders()
     {
-        $sdkIdentifier = Config::get(Constants::SDK_IDENTIFIER_KEY, Constants::SDK_IDENTIFIER);
-        $sdkVersion = Config::get(Constants::SDK_VERSION_KEY, Constants::SDK_VERSION);
-
         // Prepare request Http Headers
         $defaultHeaders = [
-            self::YOTI_SDK_IDENTIFIER_KEY => $sdkIdentifier,
-            self::YOTI_SDK_VERSION_KEY => "{$sdkIdentifier}-{$sdkVersion}",
+            self::YOTI_SDK_IDENTIFIER_KEY => $this->sdkIdentifier,
+            self::YOTI_SDK_VERSION_KEY => "{$this->sdkIdentifier}-{$this->sdkVersion}",
             'Accept' => 'application/json',
         ];
 
@@ -281,7 +294,7 @@ class RequestBuilder
      *
      * @throws \Yoti\Exception\RequestException
      */
-    public function build()
+    public function build(): Request
     {
         if (empty($this->baseUrl)) {
             throw new \InvalidArgumentException('Base URL must be provided to ' . __CLASS__);
@@ -312,7 +325,7 @@ class RequestBuilder
 
         $message = new RequestMessage(
             $this->method,
-            new Uri($url),
+            uri_for($url),
             $this->getHeaders(),
             $this->payload ? $this->payload->toStream() : null
         );

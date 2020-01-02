@@ -5,7 +5,7 @@ namespace SandboxTest;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Yoti\Http\Payload;
-use Yoti\Service\Profile\ActivityDetails;
+use Yoti\ActivityDetails;
 use YotiSandbox\Http\SandboxPathManager;
 use YotiSandbox\Http\TokenRequest;
 use YotiSandbox\SandboxClient;

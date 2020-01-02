@@ -1,6 +1,6 @@
 <?php
 
-namespace Yoti\Service\Profile;
+namespace Yoti;
 
 use Yoti\Entity\Profile;
 use Yoti\Entity\Receipt;
@@ -104,6 +104,7 @@ class ActivityDetails
             Receipt::ATTR_OTHER_PARTY_PROFILE_CONTENT,
             $this->pem
         );
+
         $this->userProfile = new Profile($this->processUserProfileAttributes($protobufAttrList));
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Yoti\Service\Aml;
+namespace Yoti\Entity;
 
 use Yoti\Exception\AmlException;
 

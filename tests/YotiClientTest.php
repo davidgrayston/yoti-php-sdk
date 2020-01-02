@@ -8,8 +8,8 @@ use Yoti\YotiClient;
 use Yoti\Entity\Country;
 use Yoti\Entity\AmlAddress;
 use Yoti\Entity\AmlProfile;
-use Yoti\Service\Aml\AmlResult;
-use Yoti\Service\Profile\ActivityDetails;
+use Yoti\Entity\AmlResult;
+use Yoti\ActivityDetails;
 use Yoti\ShareUrl\DynamicScenario;
 use Yoti\ShareUrl\DynamicScenarioBuilder;
 use Yoti\ShareUrl\Policy\DynamicPolicyBuilder;
@@ -100,7 +100,8 @@ class YotiClientTest extends TestCase
             }))
             ->willReturn($response);
 
-        $yotiClient = new YotiClient(SDK_ID, $this->pemFile, $httpClient);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile);
+        $yotiClient->setHttpClient($httpClient);
 
         $this->assertInstanceOf(
             ActivityDetails::class,
@@ -137,7 +138,8 @@ class YotiClientTest extends TestCase
             }))
             ->willReturn($response);
 
-        $yotiClient = new YotiClient(SDK_ID, $this->pemFile, $httpClient);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile);
+        $yotiClient->setHttpClient($httpClient);
 
         $yotiClient->setSdkIdentifier($expectedSdkIdentifier);
         $yotiClient->setSdkVersion($expectedSdkVersion);
@@ -194,7 +196,8 @@ class YotiClientTest extends TestCase
             )
             ->willReturn($response);
 
-        $yotiClient = new YotiClient(SDK_ID, $this->pemFile, $httpClient);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile);
+        $yotiClient->setHttpClient($httpClient);
 
         $result = $yotiClient->performAmlCheck($amlProfile);
 
@@ -316,7 +319,8 @@ class YotiClientTest extends TestCase
             }))
             ->willReturn($response);
 
-        $yotiClient = new YotiClient(SDK_ID, $this->pemFile, $httpClient);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile);
+        $yotiClient->setHttpClient($httpClient);
 
         $shareUrlResult = $yotiClient->createShareUrl($dynamicScenario);
 
@@ -370,7 +374,8 @@ class YotiClientTest extends TestCase
             ->method('sendRequest')
             ->willReturn($response);
 
-        $yotiClient = new YotiClient(SDK_ID, $this->pemFile, $httpClient);
+        $yotiClient = new YotiClient(SDK_ID, $this->pemFile);
+        $yotiClient->setHttpClient($httpClient);
 
         return $yotiClient;
     }
