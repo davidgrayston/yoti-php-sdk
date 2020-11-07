@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yoti\Test\DocScan;
 
+use GuzzleHttp\Promise\Promise;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Yoti\DocScan\DocScanClient;
@@ -218,6 +219,38 @@ class DocScanClientTest extends TestCase
         $this->assertInstanceOf(
             Media::class,
             $docScanClient->getMediaContent(TestData::DOC_SCAN_SESSION_ID, TestData::DOC_SCAN_MEDIA_ID)
+        );
+    }
+
+    /**
+     * @test
+     * @covers ::__construct
+     * @covers ::getMediaContent
+     */
+    public function testGetMediaAsync()
+    {
+        $response = $this->createMock(ResponseInterface::class);
+        $response->method('getBody')->willReturn('some-media-content');
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getHeader')->willReturn([ 'image/png' ]);
+
+        $promise = new Promise();
+        $promise->resolve($response);
+
+        $asyncClient = $this->createMock(\GuzzleHttp\ClientInterface::class);
+        $asyncClient->expects($this->exactly(1))
+            ->method('sendAsync')
+            ->willReturn($promise);
+
+        $docScanClient = new DocScanClient(TestData::SDK_ID, TestData::PEM_FILE, [
+            Config::HTTP_CLIENT_ASYNC => $asyncClient,
+        ]);
+
+        $promise = $docScanClient->getMediaContentAsync(TestData::DOC_SCAN_SESSION_ID, TestData::DOC_SCAN_MEDIA_ID);
+
+        $this->assertInstanceOf(
+            Media::class,
+            $promise->wait()
         );
     }
 

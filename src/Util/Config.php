@@ -8,6 +8,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Log\LoggerInterface;
 use Yoti\Constants;
 use Yoti\Http\Client;
+use Yoti\Http\ClientAsync;
 
 /**
  * Provides SDK configuration.
@@ -26,6 +27,9 @@ class Config
     /** HTTP client key */
     public const HTTP_CLIENT = 'http.client';
 
+    /** Async HTTP client key */
+    public const HTTP_CLIENT_ASYNC = 'http.client.async';
+
     /** Logger key */
     public const LOGGER = 'logger';
 
@@ -43,6 +47,7 @@ class Config
      *   Configuration settings include the following options:
      *
      *   - Config::HTTP_CLIENT 'http.client' (\Psr\Http\Client\ClientInterface)
+     *   - Config::HTTP_CLIENT_ASYNC 'http.client.async' (\GuzzleHttp\ClientInterface)
      *   - Config::LOGGER 'logger' (\Psr\Log\LoggerInterface)
      *   - Config::API_URL 'api.url' (string)
      *   - Config::SDK_IDENTIFIER 'sdk.identifier' (string)
@@ -65,6 +70,9 @@ class Config
             switch ($key) {
                 case self::HTTP_CLIENT:
                     $this->setHttpClient($value);
+                    break;
+                case self::HTTP_CLIENT_ASYNC:
+                    $this->setHttpClientAsync($value);
                     break;
                 case self::LOGGER:
                     $this->setLogger($value);
@@ -90,6 +98,7 @@ class Config
                 self::SDK_IDENTIFIER,
                 self::SDK_VERSION,
                 self::HTTP_CLIENT,
+                self::HTTP_CLIENT_ASYNC,
                 self::LOGGER,
             ]
         );
@@ -181,6 +190,33 @@ class Config
             $this->set(self::HTTP_CLIENT, new Client());
         }
         return $this->get(self::HTTP_CLIENT);
+    }
+
+    /**
+     * @param mixed $clientAsync
+     */
+    private function setHttpClientAsync($clientAsync): void
+    {
+        if (!($clientAsync instanceof \GuzzleHttp\ClientInterface)) {
+            throw new \InvalidArgumentException(sprintf(
+                self::TYPE_ERROR_MESSAGE,
+                self::HTTP_CLIENT_ASYNC,
+                \GuzzleHttp\ClientInterface::class
+            ));
+        }
+
+        $this->set(self::HTTP_CLIENT_ASYNC, $clientAsync);
+    }
+
+    /**
+     * @return \GuzzleHttp\ClientInterface
+     */
+    public function getHttpClientAsync(): \GuzzleHttp\ClientInterface
+    {
+        if ($this->get(self::HTTP_CLIENT_ASYNC) === null) {
+            $this->set(self::HTTP_CLIENT_ASYNC, new ClientAsync());
+        }
+        return $this->get(self::HTTP_CLIENT_ASYNC);
     }
 
     /**

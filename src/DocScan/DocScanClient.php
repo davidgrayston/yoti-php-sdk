@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yoti\DocScan;
 
+use GuzzleHttp\Promise\PromiseInterface;
 use Yoti\Constants;
 use Yoti\DocScan\Session\Create\CreateSessionResult;
 use Yoti\DocScan\Session\Create\SessionSpecification;
@@ -110,6 +111,19 @@ class DocScanClient
     public function getMediaContent(string $sessionId, string $mediaId): Media
     {
         return $this->docScanService->getMediaContent($sessionId, $mediaId);
+    }
+
+    /**
+     * Asynchronously retrieves media related to a Yoti Doc Scan session based
+     * on the supplied media ID.
+     *
+     * @param string $sessionId
+     * @param string $mediaId
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     */
+    public function getMediaContentAsync(string $sessionId, string $mediaId): PromiseInterface
+    {
+        return $this->docScanService->getMediaContentAsync($sessionId, $mediaId);
     }
 
     /**
