@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yoti\DocScan;
 
+use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
 use Yoti\Constants;
 use Yoti\DocScan\Exception\DocScanException;
@@ -53,6 +54,14 @@ class Service
         $this->pemFile = $pemFile;
         $this->config = $config;
         $this->apiUrl = $config->getApiUrl() ?? Constants::DOC_SCAN_API_URL;
+    }
+
+    /**
+     * @return \GuzzleHttp\ClientInterface
+     */
+    private function asyncHttpClient(): \GuzzleHttp\ClientInterface
+    {
+        return $this->config->getHttpClientAsync();
     }
 
     /**
@@ -131,6 +140,36 @@ class Service
     }
 
     /**
+     * @param string $sessionId
+     * @param string $mediaId
+     * @return \Yoti\Http\Request
+     */
+    private function mediaContentRequest(string $sessionId, string $mediaId): Request
+    {
+        return (new RequestBuilder($this->config))
+            ->withBaseUrl($this->apiUrl)
+            ->withEndpoint(sprintf('/sessions/%s/media/%s/content', $sessionId, $mediaId))
+            ->withQueryParam('sdkId', $this->sdkId)
+            ->withPemFile($this->pemFile)
+            ->withGet()
+            ->build();
+    }
+
+    /**
+     * @param \Psr\Http\Message\ResponseInterface $response
+     * @return \Yoti\Media\Media
+     */
+    private function mediaContentResponse(ResponseInterface $response): Media
+    {
+        self::assertResponseIsSuccess($response);
+
+        $content = (string) $response->getBody();
+        $mimeType = $response->getHeader("Content-Type")[0] ?? '';
+
+        return new Media($mimeType, $content);
+    }
+
+    /**
      * Retrieves media content from a Doc Scan session using supplied
      * media ID.
      *
@@ -141,21 +180,36 @@ class Service
      */
     public function getMediaContent(string $sessionId, string $mediaId): Media
     {
-        $response = (new RequestBuilder($this->config))
-            ->withBaseUrl($this->apiUrl)
-            ->withEndpoint(sprintf('/sessions/%s/media/%s/content', $sessionId, $mediaId))
-            ->withQueryParam('sdkId', $this->sdkId)
-            ->withPemFile($this->pemFile)
-            ->withGet()
-            ->build()
+        $response = $this
+            ->mediaContentRequest($sessionId, $mediaId)
             ->execute();
 
-        self::assertResponseIsSuccess($response);
+        return $this->mediaContentResponse($response);
+    }
 
-        $content = (string) $response->getBody();
-        $mimeType = $response->getHeader("Content-Type")[0] ?? '';
+    /**
+     * Retrieves media content asynchronously from a Doc Scan session using supplied
+     * media ID.
+     *
+     * @param string $sessionId
+     * @param string $mediaId
+     * @return PromiseInterface
+     * @throws DocScanException
+     */
+    public function getMediaContentAsync(string $sessionId, string $mediaId): PromiseInterface
+    {
+        $request = $this
+            ->mediaContentRequest($sessionId, $mediaId)
+            ->getMessage();
 
-        return new Media($mimeType, $content);
+        return $this
+            ->asyncHttpClient()
+            ->sendAsync($request)
+            ->then(
+                function (ResponseInterface $response): Media {
+                    return $this->mediaContentResponse($response);
+                }
+            );
     }
 
     /**
